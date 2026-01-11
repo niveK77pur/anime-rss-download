@@ -1,12 +1,16 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/adrg/xdg"
@@ -26,7 +30,15 @@ type DownloadItem struct {
 func main() {
 	pterm.DefaultLogger.Level = pterm.LogLevelDebug
 
-	aria2, err := arigo.Dial("ws://localhost:6800/jsonrpc", "")
+	cmd, token, err := startAria2Server("/tmp/anime-rss")
+	if err != nil {
+		return
+	}
+	defer cmd.Process.Signal(syscall.SIGINT)
+	logger.Info("Waiting a little for aria2 server to start...")
+	time.Sleep(time.Second * 2)
+
+	aria2, err := arigo.Dial("ws://localhost:6800/jsonrpc", token)
 	if err != nil {
 		logger.Error("Failed to connect to Aria2 RPC client", "error", err)
 		return
@@ -160,4 +172,30 @@ func toPointerArray[T any](slice []T) []*T {
 		pointers[i] = &slice[i]
 	}
 	return pointers
+}
+
+// Starts an Aria2 RPC server to which a client can send a download request.
+//
+// Returns the command handler to allow terminating the server once downloads
+// are complete. Also returns the token that was generated for the
+// `--rpc-secret`; this one will be needed by the clients connecting to this
+// server.
+func startAria2Server(dir string) (cmd *exec.Cmd, token string, error error) {
+	token_bytes := make([]byte, 256)
+	rand.Read(token_bytes)
+	token = hex.EncodeToString(token_bytes)
+	cmd = exec.Command(
+		"aria2c",
+		"--enable-rpc",
+		"--rpc-listen-all",
+		"--rpc-secret="+token,
+		"--seed-time=0",
+	)
+	cmd.Dir = dir
+	err := cmd.Start()
+	if err != nil {
+		logger.Error("Failed to start aria2 server", "error", err)
+		return nil, "", err
+	}
+	return cmd, token, nil
 }
