@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/mmcdole/gofeed"
@@ -28,8 +29,30 @@ func main() {
 
 	toDownload := filterToDownload(feed.Items, rexs)
 
-	for _, item := range toDownload {
-		logger.Debug(item.Title)
+	var pbars []*pterm.ProgressbarPrinter
+	multi := pterm.DefaultMultiPrinter
+	for i, item := range toDownload {
+		pbar, err := pterm.
+			DefaultProgressbar.
+			WithTotal(100).
+			WithWriter(multi.NewWriter()).
+			WithMaxWidth(200).
+			Start(item.Title)
+		if err != nil {
+			logger.Error("Failed to start progress bar", "i", i, "error", err)
+			return
+		}
+		pbars = append(pbars, pbar)
+	}
+
+	multi.Start()
+	defer multi.Stop()
+
+	for i := 0; i <= 100; i++ {
+		for _, pbar := range pbars {
+			pbar.Current = i
+		}
+		time.Sleep(time.Millisecond * 50)
 	}
 }
 
