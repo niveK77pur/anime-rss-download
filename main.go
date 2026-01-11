@@ -3,8 +3,12 @@ package main
 import (
 	"errors"
 	"log/slog"
+	"os"
+	"path/filepath"
 	"regexp"
+	"strings"
 
+	"github.com/adrg/xdg"
 	"github.com/mmcdole/gofeed"
 	"github.com/pterm/pterm"
 )
@@ -30,11 +34,16 @@ func main() {
 }
 
 func getRegexies() ([]*regexp.Regexp, error) {
-	// TODO: Fetch from config file
-	var download_regexies = []string{"Jujutsu Kaisen", "Fate Strange Fake"}
-
+	dat, err := os.ReadFile(filepath.Join(xdg.ConfigHome, "anime-rss", "titles"))
+	if err != nil {
+		logger.Error("Failed to read title filters from file", "error", err)
+		return nil, err
+	}
 	var regexies []*regexp.Regexp
-	for _, regex_string := range download_regexies {
+	for _, regex_string := range strings.Split(string(dat), "\n") {
+		if strings.TrimSpace(regex_string) == "" {
+			continue
+		}
 		re, err := regexp.Compile(regex_string)
 		if err != nil {
 			logger.Error("Failed to compile regex", "regex", regex_string)
