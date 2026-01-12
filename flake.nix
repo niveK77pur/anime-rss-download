@@ -13,13 +13,19 @@
   in {
     packages = forAllSystems (system: let
       pkgs = nixpkgsFor.${system};
+      inherit (pkgs) lib;
     in rec {
       default = anime-rss;
-      anime-rss = pkgs.buildGoModule {
+      anime-rss = pkgs.buildGoModule rec {
         pname = "anime-rss";
         version = builtins.substring 0 8 lastModifiedDate;
         src = ./.;
         vendorHash = null;
+        nativeBuildInputs = [pkgs.makeWrapper];
+        buildInputs = [pkgs.aria2];
+        postInstall = ''
+          wrapProgram $out/bin/${pname} --prefix PATH : ${lib.makeBinPath buildInputs}
+        '';
       };
     });
 
