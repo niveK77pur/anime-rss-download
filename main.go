@@ -54,6 +54,20 @@ func main() {
 
 	toDownload := filterToDownload(feed.Items, rexs)
 
+	pterm.DefaultHeader.WithFullWidth().Printf("Found %d new episodes", len(toDownload))
+	pterm.Println()
+	var episodes = make([]pterm.BulletListItem, len(toDownload))
+	for i, item := range toDownload {
+		episodes[i] = pterm.BulletListItem{
+			Level: 0,
+			Text: strings.Join([]string{
+				item.feedItem.Title,
+				item.feedItem.Published,
+			}, "\n"),
+		}
+	}
+	pterm.DefaultBulletList.WithItems(episodes).Render()
+
 	// A magnet download is handled in 2 steps by aria2. First, it downloads
 	// the metadata from the magnet link. Once it is completed, secondly, it
 	// downloads the actual file using that metadata.
