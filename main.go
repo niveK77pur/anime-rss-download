@@ -93,12 +93,12 @@ func main() {
 
 	multi := prepareProgressBars(toPointerArray(toDownload))
 
-	multi.Start()
-	defer multi.Stop()
-
 	logger.Info("Waiting for downloads to have started...")
 	// Wait a little for downloads to actually start
 	time.Sleep(time.Second * 5)
+
+	multi.Start()
+	defer multi.Stop()
 
 	for {
 		activeDownloads, err := aria2.TellActive("following", "gid", "completedLength", "totalLength")
@@ -109,14 +109,11 @@ func main() {
 		var relevantDownloads []*arigo.Status
 		for _, item := range toDownload {
 			for _, status := range activeDownloads {
-				var progress int = 0
-				if status.TotalLength > 0 {
-					progress = int(100 * (float32(status.CompletedLength) / float32(status.TotalLength)))
-				}
 				if status.GID == item.gid.GID || status.Following == item.gid.GID {
 					relevantDownloads = append(relevantDownloads, &status)
 					if item.progressBar != nil {
-						item.progressBar.Current = int(progress)
+						item.progressBar.Current = int(status.CompletedLength)
+						item.progressBar.Total = int(status.TotalLength)
 					}
 				}
 			}
@@ -167,7 +164,7 @@ func prepareProgressBars(toDownload []*DownloadItem) pterm.MultiPrinter {
 	for idx, item := range toDownload {
 		pbar, err := pterm.
 			DefaultProgressbar.
-			WithTotal(100).
+			WithTotal(0). // To be updated with download information
 			WithWriter(multi.NewWriter()).
 			WithMaxWidth(200).
 			Start(item.feedItem.Title)
