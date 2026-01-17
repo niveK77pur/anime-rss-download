@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"flag"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -30,7 +31,16 @@ type DownloadItem struct {
 func main() {
 	pterm.DefaultLogger.Level = pterm.LogLevelDebug
 
-	cmd, token, err := startAria2Server("/tmp/anime-rss")
+	downloadPathArg := flag.String("out-path", "/tmp/anime-rss", "Path in which to download all the episodes")
+	flag.Parse()
+
+	err := os.MkdirAll(*downloadPathArg, os.ModePerm)
+	if err != nil {
+		logger.Error("Failed to create download folder", "error", err)
+		return
+	}
+
+	cmd, token, err := startAria2Server(*downloadPathArg)
 	if err != nil {
 		return
 	}
