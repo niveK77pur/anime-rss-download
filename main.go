@@ -55,7 +55,11 @@ func main() {
 	}
 
 	fp := gofeed.NewParser()
-	feed, _ := fp.ParseURL("https://subsplease.org/rss/?r=1080")
+	feed, err := fp.ParseURL("https://subsplease.org/rss/?r=1080")
+	if err != nil {
+		logger.Error("Failed to parse RSS feed", "error", err)
+		return
+	}
 
 	rexs, err := getRegexies()
 	if err != nil {
