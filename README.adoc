@@ -3,6 +3,9 @@
 
 A dead simple https://subsplease.org/ weekly episodes downloader, with almost no features!
 
+.Screenshot of the program in use
+image::images/example-screenshot.png[Example screenshot]
+
 == Features
 
 - Uses the RSS 1080p feed to collect new episodes
