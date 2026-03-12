@@ -21,6 +21,8 @@ nix run github:niveK77pur/anime-rss-download -- --out-path /where/to/download/ep
 
 === Using go
 
+You probably only need aria2 available at runtime: https://aria2.github.io/
+
 ```bash
 go install
 ```
