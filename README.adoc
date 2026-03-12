@@ -40,7 +40,7 @@ Will create a binary under
 
 === What to download?
 
-Under `~/.config/anime-rss` create a text file called `title`. It should contain a bunch of lines that match the anime title to download from https://subsplease.org. Each line is interpreted as a regex that describes one anime to download.
+Under `~/.config/anime-rss` create a text file called `titles`. It should contain a bunch of lines that match the anime title to download from https://subsplease.org. Each line is interpreted as a regex that describes one anime to download.
 
 NOTE: The regex variant is the one from Go's regexp library; for reference on its syntax see: https://pkg.go.dev/regexp/syntax
 
@@ -62,7 +62,7 @@ Note that these don't match the entire title, only a portion of the title is suf
 
 [IMPORTANT]
 ====
-The lines need to (sub-)match the title in the RSS feed. You can find the titles with the following command (using https://github.com/kislyuk/yq?tab=readme-ov-file#xml-support[`xq`] provided by https://github.com/kislyuk/yq[yq]) to help you figure out to match:
+The lines need to (sub-)match the title in the RSS feed. You can find the titles with the following command (using https://github.com/kislyuk/yq?tab=readme-ov-file#xml-support[`xq`] provided by https://github.com/kislyuk/yq[yq]) to help you figure out what to match:
 
 [source,bash]
 ----
